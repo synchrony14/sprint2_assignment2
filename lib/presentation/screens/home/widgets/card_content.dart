@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:week_1_assignment/presentation/screens/details/details_screen.dart';
+import 'package:week_1_assignment/shared/styled_button.dart';
 import 'package:week_1_assignment/shared/styled_text.dart';
+import '../../../pages/registration_page.dart' as reg; 
 
 class CardContent extends StatelessWidget {
   const CardContent({super.key});
@@ -41,7 +42,7 @@ class _ProfileCard extends StatelessWidget {
         child: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF1A1824), Color(0xFF6E6A83)],
+              colors: [Color.fromARGB(255, 50, 139, 212), Color.fromARGB(255, 12, 79, 134)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -67,7 +68,7 @@ class _ProfileCardBody extends StatelessWidget {
         SizedBox(height: 16),
         _ProfileInfo(),
         SizedBox(height: 12),
-        _ViewDetailsButton(),
+        _RegisterButton(),
       ],
     );
   }
@@ -93,26 +94,27 @@ class _ProfileInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: const [
-        StyledText('JB Garcia'),
-        StyledText('Flutter Developer'),
+        CardText(text: 'JB Garcia'),
+        CardText(text: 'Flutter Developer'),
       ],
     );
   }
 }
 
 //Button Section
-class _ViewDetailsButton extends StatelessWidget {
-  const _ViewDetailsButton();
+class _RegisterButton extends StatelessWidget {
+  const _RegisterButton();
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
+    return StyledButton(
+      text: 'Register',
       onPressed: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const DetailsScreen()),
+          MaterialPageRoute(builder: (context) => const reg.RegistrationPage()),
         );
       },
-      child: const Text('View Details'),
     );
   }
 }
+
