@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:week_1_assignment/presentation/pages/widgets/form_buttons.dart';
 import 'package:week_1_assignment/shared/styled_text.dart';
 import 'package:week_1_assignment/data/user_data.dart';
+import 'package:intl/intl.dart';
+import 'dart:convert';
 
 class ReviewPage extends StatelessWidget {
   const ReviewPage({super.key, required this.tabController});
   final TabController tabController;
-  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,7 +19,7 @@ class ReviewPage extends StatelessWidget {
     );
   }
 
-//Main Body Section
+  //Main Body Section
   //ignore: non_constant_identifier_names
   Padding MainBodySection() {
     return Padding(
@@ -35,7 +35,7 @@ class ReviewPage extends StatelessWidget {
     );
   }
 
-//Header Section
+  //Header Section
   Widget _buildHeaderSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,7 +48,7 @@ class ReviewPage extends StatelessWidget {
     );
   }
 
-//Info Details Section
+  //Info Details Section
   Widget _buildInfoSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,20 +63,32 @@ class ReviewPage extends StatelessWidget {
         ),
         LabelValueText(label: 'Age', value: '${userData.age}'),
         LabelValueText(label: 'Email', value: userData.email),
-        SizedBox(height: 40),
+        const SizedBox(height: 40),
         LabelValueText(label: 'Bio - Describe yourself', value: userData.bio),
       ],
     );
   }
 
-//Buttons Section
+  //Buttons Section
   Widget _buildButtonRow(BuildContext context) {
     return ButtonRow(
       onBack: () => tabController.animateTo(1),
       onNext: () {
+        final dataJson = jsonEncode({
+          "firstName": userData.firstName,
+          "lastName": userData.lastName,
+          "birthdate": userData.birthDate != null
+              ? DateFormat('MM/dd/yyyy').format(userData.birthDate!)
+              : '',
+          "age": userData.age,
+          "email": userData.email,
+          "bio": userData.bio,
+        });
+
+        debugPrint(dataJson);
+
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Registration Complete')),
+          const SnackBar(content: Text('Registration Complete')),
         );
       },
       nextText: 'Continue',
