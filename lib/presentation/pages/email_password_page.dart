@@ -15,10 +15,30 @@ class EmailPasswordPage extends StatefulWidget {
 
 class _EmailPasswordPageState extends State<EmailPasswordPage> {
   final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+
   bool _obscurePass = true;
   bool _obscureConfirmPass = true;
 
+  @override
+  void initState() {
+    super.initState();
+    _emailController.text = userData.email;
+    _passwordController.text = userData.password;
+    _confirmPasswordController.text = userData.password;
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+//Main Body Section
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,6 +67,9 @@ class _EmailPasswordPageState extends State<EmailPasswordPage> {
           onBack: () => widget.tabController.animateTo(0),
           onNext: () {
             if (_formKey.currentState!.validate()) {
+              FocusScope.of(context).unfocus();
+              userData.email = _emailController.text;
+              userData.password = _passwordController.text;
               _formKey.currentState!.save();
               widget.tabController.animateTo(2);
             }
@@ -62,6 +85,7 @@ class _EmailPasswordPageState extends State<EmailPasswordPage> {
     return LabeledFormField(
       label: 'Email Address',
       field: TextFormField(
+        controller: _emailController,
         keyboardType: TextInputType.emailAddress,
         decoration: boxInputDecoration(),
         validator: (value) {
@@ -74,7 +98,6 @@ class _EmailPasswordPageState extends State<EmailPasswordPage> {
           }
           return null;
         },
-        onSaved: (value) => userData.email = value!,
       ),
     );
   }
@@ -101,16 +124,16 @@ class _EmailPasswordPageState extends State<EmailPasswordPage> {
           }
           return null;
         },
-        onSaved: (value) => userData.password = value!,
       ),
     );
   }
 
-//Confirm Password Section
+//Confirm PW Section
   Widget _buildConfirmPasswordField() {
     return LabeledFormField(
       label: 'Confirm Password',
       field: TextFormField(
+        controller: _confirmPasswordController,
         obscureText: _obscureConfirmPass,
         decoration: boxInputDecoration().copyWith(
           suffixIcon: IconButton(
@@ -131,3 +154,4 @@ class _EmailPasswordPageState extends State<EmailPasswordPage> {
     );
   }
 }
+

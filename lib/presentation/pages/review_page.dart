@@ -74,6 +74,7 @@ class ReviewPage extends StatelessWidget {
     return ButtonRow(
       onBack: () => tabController.animateTo(1),
       onNext: () {
+        FocusScope.of(context).unfocus();
         final dataJson = jsonEncode({
           "firstName": userData.firstName,
           "lastName": userData.lastName,

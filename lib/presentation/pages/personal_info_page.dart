@@ -40,6 +40,8 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
     );
 
     if (picked != null) {
+      int computedAge = DateTime.now().year - picked.year;
+      if (computedAge > 99) computedAge = 99;
       setState(() {
         userData.birthDate = picked;
         _birthDateController.text = DateFormat('MM/dd/yyyy').format(picked);
@@ -100,6 +102,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
           text: 'Next',
           onPressed: () {
             if (_formKey.currentState!.validate()) {
+              FocusScope.of(context).unfocus();
               userData.firstName = _firstNameController.text;
               userData.lastName = _lastNameController.text;
               userData.bio = _bioController.text;
