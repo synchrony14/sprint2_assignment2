@@ -9,15 +9,17 @@ import 'package:week_1_assignment/data/user_data.dart';
 class PersonalInfoPage extends StatefulWidget {
   const PersonalInfoPage({super.key, required this.tabController});
   final TabController tabController;
-
   @override
   State<PersonalInfoPage> createState() => _PersonalInfoPageState();
 }
 
 class _PersonalInfoPageState extends State<PersonalInfoPage> {
   final _formKey = GlobalKey<FormState>();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _birthDateController = TextEditingController();
   final _ageController = TextEditingController();
+  final _bioController = TextEditingController();
 
 //Date Picker Section
   void _selectDate() async {
@@ -36,7 +38,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
         child: child!,
       ),
     );
-    
+
     if (picked != null) {
       setState(() {
         userData.birthDate = picked;
@@ -46,10 +48,26 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
       });
     }
   }
+
+  @override
+  void initState() {
+    super.initState();
+    _firstNameController.text = userData.firstName;
+    _lastNameController.text = userData.lastName;
+    if (userData.birthDate != null) {
+      _birthDateController.text = DateFormat('MM/dd/yyyy').format(userData.birthDate!);
+      _ageController.text = userData.age.toString();
+    }
+    _bioController.text = userData.bio;
+  }
+
   @override
   void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _birthDateController.dispose();
     _ageController.dispose();
+    _bioController.dispose();
     super.dispose();
   }
 
@@ -68,7 +86,6 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
               const SectionHeader('Personal Information'),
               const SectionSubtext('Input your personal information. All fields are required.'),
               const SizedBox(height: 40),
-
               _buildFirstNameField(),
               _buildLastNameField(),
               _buildBirthdateAndAgeRow(),
@@ -83,6 +100,9 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
           text: 'Next',
           onPressed: () {
             if (_formKey.currentState!.validate()) {
+              userData.firstName = _firstNameController.text;
+              userData.lastName = _lastNameController.text;
+              userData.bio = _bioController.text;
               _formKey.currentState!.save();
               widget.tabController.animateTo(1);
             }
@@ -97,14 +117,14 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
     return LabeledFormField(
       label: 'First Name',
       field: TextFormField(
+        controller: _firstNameController,
         decoration: boxInputDecoration(),
         validator: (value) =>
-            (value == null || value.trim().isEmpty) 
-              ? 'First Name is required' 
-              : !_isTitleCase(value) 
-              ? 'Use Title Case (e.g. John)' 
+          (value == null || value.trim().isEmpty)
+            ? 'First Name is required'
+            : !_isTitleCase(value)
+              ? 'Use Title Case (e.g. John)'
               : null,
-        onSaved: (value) => userData.firstName = value!,
       ),
     );
   }
@@ -114,14 +134,14 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
     return LabeledFormField(
       label: 'Last Name',
       field: TextFormField(
+        controller: _lastNameController,
         decoration: boxInputDecoration(),
         validator: (value) =>
-            (value == null || value.trim().isEmpty) 
-              ? 'Last Name is required' 
-              : !_isTitleCase(value) 
-              ? 'Use Title Case (e.g. Doe)' 
+          (value == null || value.trim().isEmpty)
+            ? 'Last Name is required'
+            : !_isTitleCase(value)
+              ? 'Use Title Case (e.g. Doe)'
               : null,
-        onSaved: (value) => userData.lastName = value!,
       ),
     );
   }
@@ -130,6 +150,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
   Widget _buildBirthdateAndAgeRow() {
     return Row(
       children: [
+  //Birthdate Section
         Expanded(
           flex: 3,
           child: LabeledFormField(
@@ -144,6 +165,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
           ),
         ),
         const SizedBox(width: 16),
+  //Age Section
         Expanded(
           flex: 1,
           child: LabeledFormField(
@@ -164,24 +186,28 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
     return LabeledFormField(
       label: 'Bio - Describe yourself',
       field: TextFormField(
+        controller: _bioController,
         decoration: boxInputDecoration(),
         maxLines: 5,
         validator: (value) =>
-            (value == null || value.trim().isEmpty) 
-              ? 'Bio is required' 
-              : !_isTitleCase(value) 
-              ? 'Use Title Case for your bio' 
+          (value == null || value.trim().isEmpty)
+            ? 'Bio is required'
+            : !_isTitleCase(value)
+              ? 'Use Title Case for your bio'
               : null,
-        onSaved: (value) => userData.bio = value!,
       ),
     );
   }
 
-//Title Case Section
+//Title Case Function Section
   bool _isTitleCase(String input) {
     final words = input.trim().split(RegExp(r'\s+'));
-    return words.every((word) => word.isNotEmpty 
-      && word[0] == word[0].toUpperCase() 
-      && word.substring(1) == word.substring(1).toLowerCase());
+    return words.every((word) => 
+      word.isNotEmpty && 
+      word[0] == 
+      word[0].toUpperCase() && 
+      word.substring(1) == 
+      word.substring(1).toLowerCase());
   }
 }
+
