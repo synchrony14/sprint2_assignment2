@@ -74,10 +74,12 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
   }
 
 //Main Body Section
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Padding(
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    body: GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Padding(
         padding: const EdgeInsets.all(30),
         child: Form(
           key: _formKey,
@@ -96,24 +98,26 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
           ),
         ),
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(30, 10, 30, 20),
-        child: PrimaryButton(
-          text: 'Next',
-          onPressed: () {
-            if (_formKey.currentState!.validate()) {
-              FocusScope.of(context).unfocus();
-              userData.firstName = _firstNameController.text;
-              userData.lastName = _lastNameController.text;
-              userData.bio = _bioController.text;
-              _formKey.currentState!.save();
-              widget.tabController.animateTo(1);
-            }
-          },
-        ),
+    ),
+    bottomNavigationBar: Padding(
+      padding: const EdgeInsets.fromLTRB(30, 10, 30, 20),
+      child: PrimaryButton(
+        text: 'Next',
+        onPressed: () {
+          if (_formKey.currentState!.validate()) {
+            FocusScope.of(context).unfocus();
+            userData.firstName = _firstNameController.text;
+            userData.lastName = _lastNameController.text;
+            userData.bio = _bioController.text;
+            _formKey.currentState!.save();
+            widget.tabController.animateTo(1);
+          }
+        },
       ),
-    );
-  }
+    ),
+  );
+}
+
 
 //First Name Section
   Widget _buildFirstNameField() {

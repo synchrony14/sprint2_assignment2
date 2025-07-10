@@ -42,22 +42,25 @@ class _EmailPasswordPageState extends State<EmailPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              const IndicatorSection('2 out of 3'),
-              const SizedBox(height: 16),
-              const SectionHeader('Email & Password'),
-              const SectionSubtext('Login information.'),
-              const SizedBox(height: 20),
-              _buildEmailField(),
-              _buildPasswordField(),
-              _buildConfirmPasswordField(),
-              const SizedBox(height: 30),
-            ],
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              children: [
+                const IndicatorSection('2 out of 3'),
+                const SizedBox(height: 16),
+                const SectionHeader('Email & Password'),
+                const SectionSubtext('Login information.'),
+                const SizedBox(height: 20),
+                _buildEmailField(),
+                _buildPasswordField(),
+                _buildConfirmPasswordField(),
+                const SizedBox(height: 30),
+              ],
+            ),
           ),
         ),
       ),
