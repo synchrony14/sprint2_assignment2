@@ -1,66 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:week_1_assignment/presentation/pages/widgets/form_buttons.dart';
+import 'package:week_1_assignment/bloc/registration_bloc.dart';
+import 'package:week_1_assignment/bloc/registration_event.dart';
+import 'package:week_1_assignment/bloc/registration_state.dart';
 import 'package:week_1_assignment/presentation/pages/widgets/input_decoration.dart';
 import 'package:week_1_assignment/presentation/pages/widgets/labeled_form_field.dart';
 import 'package:week_1_assignment/shared/styled_text.dart';
-import 'package:week_1_assignment/data/user_data.dart';
 
 class PersonalInfoPage extends StatefulWidget {
-  const PersonalInfoPage({super.key, required this.tabController});
+  const PersonalInfoPage({super.key, required this.tabController, required this.formKey});
+
   final TabController tabController;
+  final GlobalKey<FormState> formKey;
+
   @override
   State<PersonalInfoPage> createState() => _PersonalInfoPageState();
 }
 
 class _PersonalInfoPageState extends State<PersonalInfoPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _firstNameController = TextEditingController();
-  final _lastNameController = TextEditingController();
-  final _birthDateController = TextEditingController();
-  final _ageController = TextEditingController();
-  final _bioController = TextEditingController();
-
-//Date Picker Section
-  void _selectDate() async {
-    DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime(2000),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-      builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: const ColorScheme.light(primary: Colors.blue),
-          textButtonTheme: TextButtonThemeData(
-            style: TextButton.styleFrom(foregroundColor: Colors.blue),
-          ),
-        ),
-        child: child!,
-      ),
-    );
-
-    if (picked != null) {
-      int computedAge = DateTime.now().year - picked.year;
-      if (computedAge > 99) computedAge = 99;
-      setState(() {
-        userData.birthDate = picked;
-        _birthDateController.text = DateFormat('MM/dd/yyyy').format(picked);
-        userData.age = DateTime.now().year - picked.year;
-        _ageController.text = userData.age.toString();
-      });
-    }
-  }
+  late final TextEditingController _firstNameController;
+  late final TextEditingController _lastNameController;
+  late final TextEditingController _birthDateController;
+  late final TextEditingController _ageController;
+  late final TextEditingController _bioController;
 
   @override
   void initState() {
     super.initState();
-    _firstNameController.text = userData.firstName;
-    _lastNameController.text = userData.lastName;
-    if (userData.birthDate != null) {
-      _birthDateController.text = DateFormat('MM/dd/yyyy').format(userData.birthDate!);
-      _ageController.text = userData.age.toString();
-    }
-    _bioController.text = userData.bio;
+    final user = context.read<RegistrationBloc>().state.user;
+
+    _firstNameController = TextEditingController(text: user.firstName);
+    _lastNameController = TextEditingController(text: user.lastName);
+    _birthDateController = TextEditingController(
+      text: user.birthDate != null
+          ? DateFormat('MM/dd/yyyy').format(user.birthDate!)
+          : '',
+    );
+    _ageController = TextEditingController(text: user.age.toString());
+    _bioController = TextEditingController(text: user.bio);
   }
 
   @override
@@ -73,82 +51,95 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
     super.dispose();
   }
 
+//Date Picker Section
+  void _selectDate() async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime(2000),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+
+    if (picked != null) {
+      int computedAge = DateTime.now().year - picked.year;
+      if (computedAge > 99) computedAge = 99;
+
+      context.read<RegistrationBloc>().add(UpdateBirthDate(picked, computedAge));
+
+      _birthDateController.text = DateFormat('MM/dd/yyyy').format(picked);
+      _ageController.text = computedAge.toString();
+    }
+  }
+
 //Main Body Section
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    body: GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Padding(
-        padding: const EdgeInsets.all(30),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              const IndicatorSection('1 out of 3'),
-              const SizedBox(height: 16),
-              const SectionHeader('Personal Information'),
-              const SectionSubtext('Input your personal information. All fields are required.'),
-              const SizedBox(height: 40),
-              _buildFirstNameField(),
-              _buildLastNameField(),
-              _buildBirthdateAndAgeRow(),
-              _buildBioField(),
-            ],
-          ),
-        ),
-      ),
-    ),
-    bottomNavigationBar: Padding(
-      padding: const EdgeInsets.fromLTRB(30, 10, 30, 20),
-      child: PrimaryButton(
-        text: 'Next',
-        onPressed: () {
-          if (_formKey.currentState!.validate()) {
-            FocusScope.of(context).unfocus();
-            userData.firstName = _firstNameController.text;
-            userData.lastName = _lastNameController.text;
-            userData.bio = _bioController.text;
-            _formKey.currentState!.save();
-            widget.tabController.animateTo(1);
-          }
+  @override
+    Widget build(BuildContext context) {
+      return BlocBuilder<RegistrationBloc, RegistrationState>(
+        builder: (context, state) {
+          return Scaffold(
+            body: GestureDetector(
+              onTap: () => FocusScope.of(context).unfocus(),
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(30),
+                  child: Form(
+                    key: widget.formKey,
+                    child: ListView(
+                      children: [
+                        IndicatorSection('${state.currentStep + 1} out of 3'),
+                        const SizedBox(height: 16),
+                        const SectionHeader('Personal Information'),
+                        const SectionSubtext('Input your personal information. All fields are required.'),
+                        const SizedBox(height: 40),
+                        _buildFirstNameField(),
+                        _buildLastNameField(),
+                        _buildBirthdateAndAgeRow(),
+                        _buildBioField(),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
         },
-      ),
-    ),
-  );
-}
+      );
+    }
 
-
-//First Name Section
+//Firstname Section
   Widget _buildFirstNameField() {
     return LabeledFormField(
       label: 'First Name',
       field: TextFormField(
         controller: _firstNameController,
         decoration: boxInputDecoration(),
-        validator: (value) =>
-          (value == null || value.trim().isEmpty)
-            ? 'First Name is required'
-            : !_isTitleCase(value)
-              ? 'Use Title Case (e.g. John)'
-              : null,
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) return 'First Name is required';
+          if (!_isTitleCase(value)) return 'Use Title Case (e.g. John)';
+          return null;
+        },
+        onChanged: (value) {
+          context.read<RegistrationBloc>().add(UpdateFirstName(value));
+        },
       ),
     );
   }
 
-//Last Name Section
+//Lastname Section
   Widget _buildLastNameField() {
     return LabeledFormField(
       label: 'Last Name',
       field: TextFormField(
         controller: _lastNameController,
         decoration: boxInputDecoration(),
-        validator: (value) =>
-          (value == null || value.trim().isEmpty)
-            ? 'Last Name is required'
-            : !_isTitleCase(value)
-              ? 'Use Title Case (e.g. Doe)'
-              : null,
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) return 'Last Name is required';
+          if (!_isTitleCase(value)) return 'Use Title Case (e.g. Doe)';
+          return null;
+        },
+        onChanged: (value) {
+          context.read<RegistrationBloc>().add(UpdateLastName(value));
+        },
       ),
     );
   }
@@ -157,22 +148,22 @@ Widget build(BuildContext context) {
   Widget _buildBirthdateAndAgeRow() {
     return Row(
       children: [
-  //Birthdate Section
         Expanded(
           flex: 3,
           child: LabeledFormField(
             label: 'Birthdate',
             field: TextFormField(
               controller: _birthDateController,
-              decoration: boxInputDecoration(hintText: 'MM/DD/YYYY'),
               readOnly: true,
               onTap: _selectDate,
-              validator: (value) => value!.isEmpty ? 'Birthdate is required' : null,
+              decoration: boxInputDecoration(hintText: 'MM/DD/YYYY'),
+              validator: (value) =>
+                  (value == null || value.isEmpty) ? 'Birthdate is required' : null,
             ),
           ),
         ),
+
         const SizedBox(width: 16),
-  //Age Section
         Expanded(
           flex: 1,
           child: LabeledFormField(
@@ -194,27 +185,27 @@ Widget build(BuildContext context) {
       label: 'Bio - Describe yourself',
       field: TextFormField(
         controller: _bioController,
-        decoration: boxInputDecoration(),
         maxLines: 5,
-        validator: (value) =>
-          (value == null || value.trim().isEmpty)
-            ? 'Bio is required'
-            : !_isTitleCase(value)
-              ? 'Use Title Case for your bio'
-              : null,
+        decoration: boxInputDecoration(),
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) return 'Bio is required';
+          if (!_isTitleCase(value)) return 'Use Title Case for your bio';
+          return null;
+        },
+        onChanged: (value) {
+          context.read<RegistrationBloc>().add(UpdateBio(value));
+        },
       ),
     );
   }
 
-//Title Case Function Section
+//Title Case Section
   bool _isTitleCase(String input) {
     final words = input.trim().split(RegExp(r'\s+'));
-    return words.every((word) => 
-      word.isNotEmpty && 
-      word[0] == 
-      word[0].toUpperCase() && 
-      word.substring(1) == 
-      word.substring(1).toLowerCase());
+    return words.every((word) =>
+        word.isNotEmpty &&
+        word[0] == word[0].toUpperCase() &&
+        word.substring(1) == word.substring(1).toLowerCase());
   }
 }
 

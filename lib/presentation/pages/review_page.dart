@@ -1,41 +1,39 @@
 import 'package:flutter/material.dart';
-import 'package:week_1_assignment/presentation/pages/widgets/form_buttons.dart';
-import 'package:week_1_assignment/shared/styled_text.dart';
-import 'package:week_1_assignment/data/user_data.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'dart:convert';
+import 'package:week_1_assignment/bloc/registration_bloc.dart';
+import 'package:week_1_assignment/data/user_entity.dart';
+import 'package:week_1_assignment/shared/styled_text.dart';
 
 class ReviewPage extends StatelessWidget {
   const ReviewPage({super.key, required this.tabController});
+
   final TabController tabController;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: MainBodySection(),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(30, 10, 30, 20),
-        child: _buildButtonRow(context),
-      ),
+      body: _mainBodySection(context),
     );
   }
 
-  //Main Body Section
-  //ignore: non_constant_identifier_names
-  Padding MainBodySection() {
+//Main Body Section
+  Widget _mainBodySection(BuildContext context) {
+    final user = context.watch<RegistrationBloc>().state.user;
     return Padding(
       padding: const EdgeInsets.all(30),
       child: ListView(
         children: [
           _buildHeaderSection(),
           const SizedBox(height: 20),
-          _buildInfoSection(),
+          _buildInfoSection(user),
           const SizedBox(height: 30),
         ],
       ),
     );
   }
 
-  //Header Section
+//Header Section
   Widget _buildHeaderSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,51 +46,26 @@ class ReviewPage extends StatelessWidget {
     );
   }
 
-  //Info Details Section
-  Widget _buildInfoSection() {
+//Info Section
+  Widget _buildInfoSection(UserEntity user) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        LabelValueText(label: 'First Name', value: userData.firstName),
-        LabelValueText(label: 'Last Name', value: userData.lastName),
+        LabelValueText(label: 'First Name', value: user.firstName),
+        LabelValueText(label: 'Last Name', value: user.lastName),
         LabelValueText(
           label: 'Birthdate',
-          value: userData.birthDate != null
-              ? DateFormat('MM/dd/yyyy').format(userData.birthDate!)
+          value: user.birthDate != null
+              ? DateFormat('MM/dd/yyyy').format(user.birthDate!)
               : '',
         ),
-        LabelValueText(label: 'Age', value: '${userData.age}'),
-        LabelValueText(label: 'Email', value: userData.email),
+        LabelValueText(label: 'Age', value: '${user.age}'),
+        LabelValueText(label: 'Email', value: user.email),
         const SizedBox(height: 40),
-        LabelValueText(label: 'Bio - Describe yourself', value: userData.bio),
+        LabelValueText(label: 'Bio - Describe yourself', value: user.bio),
       ],
     );
   }
-
-  //Buttons Section
-  Widget _buildButtonRow(BuildContext context) {
-    return ButtonRow(
-      onBack: () => tabController.animateTo(1),
-      onNext: () {
-        FocusScope.of(context).unfocus();
-        final dataJson = jsonEncode({
-          "firstName": userData.firstName,
-          "lastName": userData.lastName,
-          "birthdate": userData.birthDate != null
-              ? DateFormat('MM/dd/yyyy').format(userData.birthDate!)
-              : '',
-          "age": userData.age,
-          "email": userData.email,
-          "bio": userData.bio,
-        });
-
-        debugPrint(dataJson);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registration Complete')),
-        );
-      },
-      nextText: 'Continue',
-    );
-  }
 }
+
+

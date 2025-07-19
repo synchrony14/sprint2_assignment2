@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:week_1_assignment/bloc/registration_bloc.dart';
+import 'package:week_1_assignment/bloc/registration_event.dart';
+import 'package:week_1_assignment/bloc/registration_state.dart';
+import 'package:week_1_assignment/presentation/pages/widgets/input_decoration.dart';
+import 'package:week_1_assignment/presentation/pages/widgets/labeled_form_field.dart';
 import 'package:week_1_assignment/shared/styled_text.dart';
-import 'package:week_1_assignment/data/user_data.dart';
-import 'widgets/input_decoration.dart';
-import 'widgets/form_buttons.dart';
-import 'widgets/labeled_form_field.dart';
 
 class EmailPasswordPage extends StatefulWidget {
   const EmailPasswordPage({super.key, required this.tabController});
+
   final TabController tabController;
 
   @override
@@ -15,9 +18,9 @@ class EmailPasswordPage extends StatefulWidget {
 
 class _EmailPasswordPageState extends State<EmailPasswordPage> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
+  late final TextEditingController _emailController;
+  late final TextEditingController _passwordController;
+  late final TextEditingController _confirmPasswordController;
 
   bool _obscurePass = true;
   bool _obscureConfirmPass = true;
@@ -25,9 +28,10 @@ class _EmailPasswordPageState extends State<EmailPasswordPage> {
   @override
   void initState() {
     super.initState();
-    _emailController.text = userData.email;
-    _passwordController.text = userData.password;
-    _confirmPasswordController.text = userData.password;
+    final user = context.read<RegistrationBloc>().state.user;
+    _emailController = TextEditingController(text: user.email);
+    _passwordController = TextEditingController(text: user.password);
+    _confirmPasswordController = TextEditingController(text: user.password);
   }
 
   @override
@@ -41,120 +45,88 @@ class _EmailPasswordPageState extends State<EmailPasswordPage> {
 //Main Body Section
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Form(
-            key: _formKey,
-            child: ListView(
-              children: [
-                const IndicatorSection('2 out of 3'),
-                const SizedBox(height: 16),
-                const SectionHeader('Email & Password'),
-                const SectionSubtext('Login information.'),
-                const SizedBox(height: 20),
-                _buildEmailField(),
-                _buildPasswordField(),
-                _buildConfirmPasswordField(),
-                const SizedBox(height: 30),
-              ],
+    return BlocBuilder<RegistrationBloc, RegistrationState>(
+      builder: (context, state) {
+        return Scaffold(
+          body: GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  children: [
+                    IndicatorSection('${state.currentStep + 1} out of 3'),
+                    const SizedBox(height: 16),
+                    const SectionHeader('Email & Password'),
+                    const SectionSubtext('Login information.'),
+                    const SizedBox(height: 20),
+                    _buildEmailField(),
+                    _buildPasswordField(),
+                    _buildConfirmPasswordField(),
+                    const SizedBox(height: 30),
+                  ],
+                ),
+              ),
             ),
           ),
-        ),
-      ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
-        child: ButtonRow(
-          onBack: () => widget.tabController.animateTo(0),
-          onNext: () {
-            if (_formKey.currentState!.validate()) {
-              FocusScope.of(context).unfocus();
-              userData.email = _emailController.text;
-              userData.password = _passwordController.text;
-              _formKey.currentState!.save();
-              widget.tabController.animateTo(2);
-            }
-          },
-          nextText: 'Review',
-        ),
-      ),
+        );
+      },
     );
   }
 
 //Email Section
-  Widget _buildEmailField() {
-    return LabeledFormField(
-      label: 'Email Address',
-      field: TextFormField(
-        controller: _emailController,
-        keyboardType: TextInputType.emailAddress,
-        decoration: boxInputDecoration(),
-        validator: (value) {
-          if (value == null || value.trim().isEmpty) {
-            return 'Email is required';
-          }
-          final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-          if (!emailRegex.hasMatch(value)) {
-            return 'Enter a valid email';
-          }
-          return null;
-        },
-      ),
-    );
-  }
+  Widget _buildEmailField() => LabeledFormField(
+    label: 'Email Address',
+    field: TextFormField(
+      controller: _emailController,
+      keyboardType: TextInputType.emailAddress,
+      decoration: boxInputDecoration(),
+      validator: (v) {
+        if (v == null || v.trim().isEmpty) return 'Email is required';
+        final re = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+          return re.hasMatch(v) ? null : 'Enter a valid email';
+      },
+      onChanged: (v) => context.read<RegistrationBloc>().add(UpdateEmail(v)),
+    ),
+  );
 
 //Password Section
-  Widget _buildPasswordField() {
-    return LabeledFormField(
-      label: 'Password',
-      field: TextFormField(
-        controller: _passwordController,
-        obscureText: _obscurePass,
-        decoration: boxInputDecoration().copyWith(
-          suffixIcon: IconButton(
-            icon: Icon(_obscurePass ? Icons.visibility_off : Icons.visibility),
-            onPressed: () => setState(() => _obscurePass = !_obscurePass),
-          ),
+  Widget _buildPasswordField() => LabeledFormField(
+    label: 'Password',
+    field: TextFormField(
+      controller: _passwordController,
+      obscureText: _obscurePass,
+      decoration: boxInputDecoration().copyWith(
+        suffixIcon: IconButton(
+          icon: Icon(_obscurePass ? Icons.visibility_off : Icons.visibility),
+          onPressed: () => setState(() => _obscurePass = !_obscurePass),
         ),
-        validator: (value) {
-          if (value == null || value.trim().isEmpty) {
-            return 'Password is required';
-          }
-          if (value.length < 8) {
-            return 'Minimum 8 characters';
-          }
-          return null;
-        },
       ),
-    );
-  }
+      validator: (v) {
+        if (v == null || v.trim().isEmpty) return 'Password is required';
+        return v.length >= 8 ? null : 'Minimum 8 characters';
+      },
+      onChanged: (v) => context.read<RegistrationBloc>().add(UpdatePassword(v)),
+    ),
+  );
 
 //Confirm PW Section
-  Widget _buildConfirmPasswordField() {
-    return LabeledFormField(
-      label: 'Confirm Password',
-      field: TextFormField(
-        controller: _confirmPasswordController,
-        obscureText: _obscureConfirmPass,
-        decoration: boxInputDecoration().copyWith(
-          suffixIcon: IconButton(
-            icon: Icon(_obscureConfirmPass ? Icons.visibility_off : Icons.visibility),
-            onPressed: () => setState(() => _obscureConfirmPass = !_obscureConfirmPass),
-          ),
+  Widget _buildConfirmPasswordField() => LabeledFormField(
+    label: 'Confirm Password',
+    field: TextFormField(
+      controller: _confirmPasswordController,
+      obscureText: _obscureConfirmPass,
+      decoration: boxInputDecoration().copyWith(
+        suffixIcon: IconButton(
+          icon: Icon(_obscureConfirmPass ? Icons.visibility_off : Icons.visibility),
+          onPressed: () => setState(() => _obscureConfirmPass = !_obscureConfirmPass),
         ),
-        validator: (value) {
-          if (value == null || value.trim().isEmpty) {
-            return 'Confirm Password is required';
-          }
-          if (value != _passwordController.text) {
-            return 'Passwords do not match';
-          }
-          return null;
-        },
       ),
-    );
-  }
+      validator: (v) {
+        if (v == null || v.trim().isEmpty) return 'Confirm Password is required';
+        return v == _passwordController.text ? null : 'Passwords do not match';
+      },
+    ),
+  );
 }
-
