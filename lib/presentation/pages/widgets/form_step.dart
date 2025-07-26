@@ -11,6 +11,7 @@ class FormStep extends StatelessWidget {
     required this.onNext,
     this.onBack,
     this.isReviewStep = false,
+    this.showButtons = true,
   });
 
   final String title;
@@ -19,6 +20,7 @@ class FormStep extends StatelessWidget {
   final VoidCallback onNext;
   final VoidCallback? onBack;
   final bool isReviewStep;
+  final bool showButtons;
 
   @override
   Widget build(BuildContext context) {
@@ -39,19 +41,19 @@ class FormStep extends StatelessWidget {
         const SizedBox(height: 32),
         ...fields,
         const SizedBox(height: 20),
+
+        if (showButtons)
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (onBack != null)
-              StyledButton(
-                text: 'Back',
-                onPressed: onBack!,
-              ),
+            StyledButton(
+              text: 'Back',
+              onPressed: onBack!,
+            ),
             const SizedBox(width: 20),
             StyledButton(
-              text: isReviewStep 
-                ? 'Continue' 
-                : 'Next',
+              text: isReviewStep ? 'Continue' : 'Next',
               onPressed: onNext,
             ),
           ],

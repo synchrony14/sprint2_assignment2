@@ -10,7 +10,7 @@ class RegistrationState extends Equatable {
 
   const RegistrationState({
     required this.user,
-    required this.currentStep,
+    this.currentStep = 0,
     this.isSubmissionSuccess = false,
     this.isSubmitting = false,
     this.errorMessage,

@@ -19,6 +19,7 @@ class HomeScreen extends StatelessWidget {
     @override
     Widget build(BuildContext context) {
       return AppBar(
+        automaticallyImplyLeading: false,
         title: const AppbarTitleText('Home Screen'),
         centerTitle: true,
         elevation: 0,

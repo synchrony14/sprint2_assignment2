@@ -64,3 +64,4 @@ class UpdateStep extends RegistrationEvent{
 }
 
 class SubmitRegistration extends RegistrationEvent{}
+class ResetSubmissionStatus extends RegistrationEvent{}

@@ -1,4 +1,10 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:week_1_assignment/api_service.dart';
+import 'package:week_1_assignment/bloc/registration/registration_bloc.dart';
+import 'package:week_1_assignment/bloc/user/user_list_bloc.dart';
+import 'package:week_1_assignment/presentation/screens/user%20list/user_list_screen.dart';
 import 'package:week_1_assignment/shared/styled_button.dart';
 import 'package:week_1_assignment/shared/styled_text.dart';
 import '../../../pages/registration_page.dart' as reg; 
@@ -34,7 +40,7 @@ class CardContent extends StatelessWidget {
     Widget build(BuildContext context) {
       return SizedBox(
         width: 360,
-        height: 380,
+        height: 450,
         child: Card(
           elevation: 6,
           margin: const EdgeInsets.all(28),
@@ -67,8 +73,10 @@ class CardContent extends StatelessWidget {
           _ProfileAvatar(),
           SizedBox(height: 16),
           _ProfileInfo(),
-          SizedBox(height: 12),
+          SizedBox(height: 20),
           _RegisterButton(),
+          SizedBox(height: 12),
+          _ViewUserListButton(),
         ],
       );
     }
@@ -101,7 +109,7 @@ class CardContent extends StatelessWidget {
     }
   }
 
-//Button Section
+//Register Button Section
   class _RegisterButton extends StatelessWidget {
     const _RegisterButton();
     @override
@@ -109,12 +117,78 @@ class CardContent extends StatelessWidget {
       return StyledButton(
         text: 'Register',
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const reg.RegistrationPage()),
+          Navigator.push(context,
+            MaterialPageRoute(
+              builder: (_) => BlocProvider(
+                create: (_)=> RegistrationBloc(),
+                child: const reg.RegistrationPage(),
+              ), 
+            ),
           );
         },
       );
     }
   }
 
+//View User List Button Section
+  class _ViewUserListButton extends StatelessWidget {
+    const _ViewUserListButton();
+    @override
+    Widget build(BuildContext context) {
+      return BlocProvider(
+        create: (_) => UserListBloc(ApiService(Dio())),
+        child: _ButtonWithBloc(),
+      );
+    }
+  }
+
+//Bloc Button Section
+class _ButtonWithBloc extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<UserListBloc, UserListState>(
+      listener: (context, state) {
+        if (state is UserListLoading) {
+          _showLoader(context);
+        } else {
+          _dismissLoader(context);
+        }
+
+        if (state is UserListSuccess) {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const UserListScreen()),
+          );
+        }
+
+        if (state is UserListFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
+        }
+      },
+      builder: (context, state) {
+        return StyledButton(
+          text: 'View Users',
+          onPressed: () {
+            context.read<UserListBloc>().add(FetchUsers());
+          },
+        );
+      },
+    );
+  }
+
+//Loaders Section
+  void _showLoader(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+  }
+
+  void _dismissLoader(BuildContext context) {
+    if (Navigator.of(context, rootNavigator: true).canPop()) {
+      Navigator.of(context, rootNavigator: true).pop();
+    }
+  }
+}

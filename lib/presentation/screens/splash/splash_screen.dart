@@ -13,13 +13,15 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 2), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
-    });
+    Future.delayed(
+      const Duration(seconds: 2), (){
+        Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      }
+    );
   }
+  
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
@@ -64,7 +66,7 @@ class _SplashScreenState extends State<SplashScreen> {
           ),
           SizedBox(height: 8),
           StyledText(
-            text: 'Assignment 1',
+            text: 'Assignment 2',
             fontSize: 28,
             fontWeight: FontWeight.bold,
             color: Colors.white,

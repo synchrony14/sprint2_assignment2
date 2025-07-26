@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:week_1_assignment/bloc/registration_bloc.dart';
-import 'package:week_1_assignment/bloc/registration_event.dart';
-import 'package:week_1_assignment/bloc/registration_state.dart';
+import 'package:week_1_assignment/bloc/registration/registration_bloc.dart';
+import 'package:week_1_assignment/bloc/registration/registration_event.dart';
+import 'package:week_1_assignment/bloc/registration/registration_state.dart';
 import 'package:week_1_assignment/presentation/pages/widgets/input_decoration.dart';
 import 'package:week_1_assignment/presentation/pages/widgets/labeled_form_field.dart';
 import 'package:week_1_assignment/shared/styled_text.dart';
@@ -47,8 +47,8 @@ class _EmailPasswordPageState extends State<EmailPasswordPage> {
   Widget build(BuildContext context) {
     return BlocBuilder<RegistrationBloc, RegistrationState>(
       builder: (context, state) {
-        return Scaffold(
-          body: GestureDetector(
+        return SizedBox.expand(
+          child: GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),
             child: Padding(
               padding: const EdgeInsets.all(20),

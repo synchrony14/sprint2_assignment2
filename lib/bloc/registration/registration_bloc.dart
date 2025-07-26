@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:week_1_assignment/bloc/registration_event.dart';
-import 'package:week_1_assignment/bloc/registration_state.dart';
+import 'package:week_1_assignment/bloc/registration/registration_event.dart';
+import 'package:week_1_assignment/bloc/registration/registration_state.dart';
 import 'package:week_1_assignment/data/user_entity.dart';
 
 class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
@@ -50,6 +50,10 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
             errorMessage: e.toString(),
           ));
         }
+    });
+
+    on<ResetSubmissionStatus>((event, emit){
+      emit(state.copyWith(isSubmissionSuccess: false));
     });
   }
 }

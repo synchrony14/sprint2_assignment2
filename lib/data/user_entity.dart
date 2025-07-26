@@ -1,5 +1,9 @@
 import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
 
+part 'user_entity.g.dart';
+
+@JsonSerializable()
 class UserEntity extends Equatable {
   final String firstName;
   final String lastName;
@@ -8,6 +12,9 @@ class UserEntity extends Equatable {
   final String bio;
   final String email;
   final String password;
+
+  factory UserEntity.fromJson(Map<String, dynamic> json) => _$UserEntityFromJson(json);
+  Map<String, dynamic> toJson() => _$UserEntityToJson(this);
 
   const UserEntity({
     this.firstName = '',
@@ -27,7 +34,6 @@ class UserEntity extends Equatable {
     String? bio,
     String? email,
     String? password, 
-    int? step,
   }) {
     return UserEntity(
       firstName: firstName?? this.firstName,
